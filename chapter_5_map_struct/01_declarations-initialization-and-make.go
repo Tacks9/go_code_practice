@@ -1,3 +1,6 @@
+/*
+	2020/11/15 周日
+*/
 package main
 
 import "fmt"

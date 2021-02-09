@@ -2,7 +2,7 @@
  * @Descripttion: function 函数 (签名、可变参数、多返回值)
  * @Author: tacks321@qq.com
  * @Date: 2021-02-09 15:44:55
- * @LastEditTime: 2021-02-09 16:32:53
+ * @LastEditTime: 2021-02-09 16:35:56
  */
 package main
 
@@ -49,6 +49,15 @@ func getAreaAndPerimeter(length, width int) (int, int) {
 	return area, perimeter
 }
 
+//////////////////////////////////////////////////////////////////////【递归】
+func fact(n int) int {
+	if n == 0 {
+		return 1
+	}
+	// 递归自身调用
+	return n * fact(n-1)
+}
+
 // 主函数
 func main() {
 	fmt.Println("====================function函数==================")
@@ -66,5 +75,8 @@ func main() {
 
 	// 【多返回值函数】
 	fmt.Println(getAreaAndPerimeter(2, 2))
+
+	// 递归
+	fmt.Println(fact(7))
 
 }

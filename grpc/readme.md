@@ -8,6 +8,27 @@
     - （http://www.mooyle.com/golang/gRPC/001-proto3.html）
     - （https://colobu.com/2019/10/03/protobuf-ultimate-tutorial-in-go/）
 
+
+### 程序代码
+
+- 相关参考
+  - 煎鱼 (https://www.cnblogs.com/baoshu/p/13488106.html)
+  - 宝树呐 (https://eddycjy.com/posts/go/grpc/2018-09-23-client-and-server/)
+
+```gotemplate
+- grpc-client
+    - service 
+        - Product.pb.go [复制服务端生成对应的数据结构]
+    - go_client.go [GRPC 客户端主程序]
+- grpc-service
+    - protofiles
+        - Product.proto [编写protobuf文件 定义message]
+    - service
+        - Product.pb.go [利用protoc工具生成的]
+        - ProductService.go [方法封装 实现proto定义的类的方法 也就是实现接口方法]
+    - go_service.go [GRPC 服务端主程序]
+```
+
 ### 定义消息类型
 
 - 文件后缀是 `.proto`
@@ -50,7 +71,7 @@
 
 ### `go path` & `go mod`
 
-- `go path`
+#### `go path`
 
 > GO1.1之前都是`GOPATH`模式，进行包依赖管理，项目必须运行在`GOPATH`下，并且需要创建`$GOPATH/src`用来存放 `go get`的下载的包。
 ```gotemplate
@@ -94,10 +115,12 @@
 
 
 
-- `go mod`
+#### `go mod`
 
 > GO1.3之后，推荐使用GOMOD,项目不需要再放到GOPATH下面，每一个项目都是一个Module。
 
+  - Go Modules 详解使用 (https://learnku.com/articles/27401)
+  - Go Modules 前世今生 (https://juejin.cn/post/6844904166310019086#heading-0)
 ```shell
 // 查看环境配置
 # go env
@@ -105,6 +128,45 @@
 # go env -w GO111MODULE=on
 // 配置镜像 就是配置mod的代理。 direct如果代理拿不到，再通过源地址go get获取
 # go env -w GOPROXY=https://goproxy.cn,direct
+// 切换GOPATH  需要修改环境变量 GOPATH
+
+
+
+// 初始化一个新的module
+# go mod init
+// 你可以在 $GOPATH/src 之外的任何地方,指定目录 比如
+# mkdir go-mod-demo && cd go-mo-demo
+# go mod init go-mod-demo
+// 然后会生成一个go.mod文件
+// 创建一个程序 main
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    r := gin.Default()
+    r.GET("/ping", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "pong",
+        })
+    })
+    r.Run() // listen and serve on 0.0.0.0:8080
+}
+
+// 运行的时候就会解决依赖下载包，go.sum文件 pkg\mod\cache文件
+
+// 查看所有依赖 (可以看到所有的依赖包)
+# go list -m all 
+
+// 如果想要回退，可以查看版本历史
+# go list -m -versions github.com/gin-gonic/gin
+
+// 再后面跟上@版本号，可以进行版本倒退
+# go get github.com/gin-gonic/gin@v1.1.4 
+
+// 移除一些不必要的依赖
+# go mod tidy
+
 
 // 恢复初始设置
 # go env -u
@@ -113,18 +175,37 @@
 ```
 
 
-### 程序代码
-
-```gotemplate
-- grpc-client
-    - service 
-        - Product.pb.go [复制服务端生成对应的数据结构]
-    - go_client.go [GRPC 客户端主程序]
-- grpc-service
-    - protofiles
-        - Product.proto [编写protobuf文件 定义message]
-    - service
-        - Product.pb.go [利用protoc工具生成的]
-        - ProductService.go [方法封装 实现proto定义的类的方法 也就是实现接口方法]
-    - go_service.go [GRPC 服务端主程序]
+- 代码逻辑
+```
+【1】创建项目目录
+  - grpc-client 客户端
+  - grpc-service 服务端
+【2】创建mod
+    go mod init grpc-service
+【3】编写proto3
+  - grpc-service 服务端
+      - protofiles 
+          - Product.proto protobuf文件 定义数据类型
+【4】生成对应的pb.go文件
+  # cd grpc-service/protofiles/ && protoc --go_out=plugins=grpc:../service Product.proto
+【5】编写对应服务service
+   - grpc-service 服务端
+      - service 
+          - Product.pb.go 生成的中间文件
+          - ProductService.go 方法的具体实现
+【6】创建服务端main
+   - grpc-service 服务端
+      - go_service.go 主函数
+【7】运行
+    go run go_service.go
+    这样就会把mod对应的依赖包进行下载
+【8】客户端
+     go mod init grpc-client
+【9】复制一份pb文件到客户端service中
+   - grpc-client 客户端
+      - service
+          - Product.pb.go 中间文件 同服务端
+【10】创建客户端mian
+   - grpc-client 客户端
+      - go_client.go
 ```

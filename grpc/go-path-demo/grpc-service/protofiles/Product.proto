@@ -1,0 +1,23 @@
+// 指定proto语法版本
+syntax = "proto3";
+
+// 指定包名
+package service;
+
+// 定义message消息类型
+// request
+message ProductRequest {
+  int64 prod_id = 1;
+}
+// response
+message ProductResponse {
+  string prod_name = 1;
+}
+
+
+// 定义服务主体
+service ProdService {
+  // 定义方法 获取商品名字
+  rpc GetProductName(ProductRequest) returns(ProductResponse);
+}
+
